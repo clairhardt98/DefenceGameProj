@@ -11,12 +11,10 @@ Canon::Canon()
 	SetDist();
 }
 
-Canon::Canon(const POINT& center, const RECT& barrelPos, const POINT& shootPos, const Vector2D& barrelSlope)
+Canon::Canon(const POINT& center, const RECT& barrelPos)
 	:GameObject(center)
 {
 	Barrel = barrelPos;
-	ShootPos = shootPos;
-	BarrelSlope = barrelSlope;
 	SetBarrelPoint();
 	SetDist();
 }
@@ -39,6 +37,8 @@ void Canon::Rotate(const FLOAT& theta)
 		BarrelPoint[i].x = Center.x + (Dist[i] * sin(theta));
 		BarrelPoint[i].y = Center.y + (Dist[i] * cos(theta));
 	}
+	ShootPos.x = Center.x + ShootPosDist * sin(theta);
+	ShootPos.y = Center.y + ShootPosDist * cos(theta);
 }
 
 void Canon::SetBarrelPoint()
@@ -47,6 +47,7 @@ void Canon::SetBarrelPoint()
 	BarrelPoint[1] = { Barrel.right,Barrel.top };
 	BarrelPoint[2] = { Barrel.right,Barrel.bottom };
 	BarrelPoint[3] = { Barrel.left,Barrel.bottom };
+	ShootPos = { Center.x, Center.y + Barrel.bottom - Barrel.top };
 }
 
 void Canon::SetDist()
@@ -55,5 +56,6 @@ void Canon::SetDist()
 	{
 		Dist[i] = sqrt(pow(Center.x - BarrelPoint[i].x, 2) + pow(Center.y - BarrelPoint[i].y,2));
 	}	
+	ShootPosDist = Barrel.bottom - Barrel.top;
 }
 

@@ -8,13 +8,14 @@ private:
 	Vector2D BarrelSlope;
 	POINT BarrelPoint[4];
 	LONG Dist[4];
+	LONG ShootPosDist;
 
 	
 	void SetBarrelPoint();
 	void SetDist();
 public:
 	Canon();
-	Canon(const POINT& center, const RECT& barrelPos, const POINT& shootPos, const Vector2D& barrelSlope);
+	Canon(const POINT& center, const RECT& barrelPos);
 	//오버라이드 메서드
 	void Update()override;
 	void Draw()override;
