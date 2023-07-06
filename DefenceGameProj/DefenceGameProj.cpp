@@ -3,6 +3,7 @@
 
 #include "framework.h"
 #include "DefenceGameProj.h"
+#include "GameManager.h"
 
 #define MAX_LOADSTRING 100
 
@@ -16,6 +17,13 @@ ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+
+
+//전역변수
+
+
+//함수
+
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -57,7 +65,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
         else
         {
+            UpdateGameObjects(Objects);
             //기타 처리
+            //주기적으로 화면 그리기
+            //주기적으로 객체들 연산 처리하기
         }
     }
 

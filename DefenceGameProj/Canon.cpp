@@ -9,6 +9,7 @@ Canon::Canon()
 	BarrelSlope = Vector2D(0, 0);
 	SetBarrelPoint();
 	SetDist();
+	Angle = 0;
 }
 
 Canon::Canon(const POINT& center, const RECT& barrelPos)
@@ -17,15 +18,18 @@ Canon::Canon(const POINT& center, const RECT& barrelPos)
 	Barrel = barrelPos;
 	SetBarrelPoint();
 	SetDist();
+	BarrelSlope = Vector2D(0, ShootPos.y);
 }
 
-void Canon::Update()
+void Canon::Update(int handle)
 {
-
+	if (!handle)
+		Angle *= -1;
 }
 
-void Canon::Draw()
+void Canon::Draw(HDC hdc)
 {
+	Polygon(hdc, BarrelPoint, 4);
 }
 
 
@@ -39,6 +43,8 @@ void Canon::Rotate(const FLOAT& theta)
 	}
 	ShootPos.x = Center.x + ShootPosDist * sin(theta);
 	ShootPos.y = Center.y + ShootPosDist * cos(theta);
+	BarrelSlope.setX(ShootPosDist * sin(theta));
+	BarrelSlope.setY(ShootPosDist * cos(theta));
 }
 
 void Canon::SetBarrelPoint()
