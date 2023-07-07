@@ -10,17 +10,15 @@ class GameManager
 {
 private:
 	std::vector<GameObject*> Objects;
-	int StartTime;
-	int CurTime;
-	int FrameRate;
+	
 public:
 	GameManager();
-	GameManager(int StartTime);
-
-	void SetCurTime(int Time) { CurTime = Time; };
-
+	
+	std::vector<GameObject*>& GetGameObjects() { return Objects; }
 	void InitGameObjects(const RECT& rectView);
-	void UpdateGameObjects(int handle);
+	void UpdateGameObjects();
+	void DrawGameObjects(HDC hdc);
 	void DeleteGameObjects();
+	void InstantiateBullet(Canon& canon);
 };
 //객체들 담을 변수

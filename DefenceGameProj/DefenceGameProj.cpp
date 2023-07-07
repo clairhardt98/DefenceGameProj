@@ -1,11 +1,14 @@
 ﻿// DefenceGameProj.cpp : 애플리케이션에 대한 진입점을 정의합니다.
 //
-
 #include "framework.h"
 #include "DefenceGameProj.h"
 #include "GameManager.h"
 
+
+
 #define MAX_LOADSTRING 100
+
+#define timer_ID_1 1
 
 // 전역 변수:
 HINSTANCE hInst;                                // 현재 인스턴스입니다.
@@ -20,9 +23,14 @@ INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 
 //전역변수
+RECT rectView;
+POINT ptMousePos;
 
 
+
+int handle = 0;
 //함수
+
 
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
@@ -51,24 +59,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     MSG msg;
 
     // 기본 메시지 루프입니다:
-    while (1)
+    while (GetMessage(&msg, nullptr, 0, 0))
     {
-        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+        if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
         {
-            if (msg.message == WM_QUIT)
-                break;
-            else
-            {
-                TranslateMessage(&msg);
-                DispatchMessage(&msg);
-            }
-        }
-        else
-        {
-            UpdateGameObjects(Objects);
-            //기타 처리
-            //주기적으로 화면 그리기
-            //주기적으로 객체들 연산 처리하기
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
         }
     }
 
@@ -143,8 +139,40 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    static Canon canon;
+    static GameManager gm;
     switch (message)
     {
+    case WM_CREATE:
+        {
+            SetTimer(hWnd, timer_ID_1, 10, NULL);
+            GetClientRect(hWnd, &rectView);
+            POINT CanonPos = { (rectView.right - rectView.left) / 2,rectView.bottom };
+            RECT BarrelPos = { CanonPos.x - 10,CanonPos.y - 100,CanonPos.x + 10,CanonPos.y - 20 };
+            canon = Canon(CanonPos, BarrelPos);
+        }
+        break;
+    case WM_MOUSEMOVE:
+    {
+        ptMousePos.x = LOWORD(lParam);
+        ptMousePos.y = HIWORD(lParam);
+        Vector2D temp(ptMousePos.x, ptMousePos.y);
+        canon.SetSlope(temp);
+    }
+        break;
+    case WM_LBUTTONDOWN:
+    {
+        gm.InstantiateBullet(canon);
+        InvalidateRect(hWnd, NULL, TRUE);
+    }
+        break;
+    case WM_TIMER:
+    {
+        canon.Update();
+        gm.UpdateGameObjects();
+        InvalidateRgn(hWnd, NULL, TRUE);
+    }
+        break;
     case WM_COMMAND:
         {
             int wmId = LOWORD(wParam);
@@ -166,11 +194,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
-            // TODO: 여기에 hdc를 사용하는 그리기 코드를 추가합니다...
+            
+            gm.DrawGameObjects(hdc);
+            canon.Draw(hdc);
             EndPaint(hWnd, &ps);
         }
         break;
     case WM_DESTROY:
+        gm.DeleteGameObjects();
         PostQuitMessage(0);
         break;
     default:
@@ -198,3 +229,4 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     }
     return (INT_PTR)FALSE;
 }
+

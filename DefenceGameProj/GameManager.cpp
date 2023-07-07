@@ -6,28 +6,27 @@ GameManager::GameManager()
 {
 }
 
-GameManager::GameManager(int startTime)
-{
-	CurTime = StartTime = startTime;
-	FrameRate = 16;
-}
+
 
 void GameManager::InitGameObjects(const RECT& rectView)
 {
-	POINT CanonPos = { (rectView.right - rectView.left) / 2,rectView.bottom };
-	RECT BarrelPos = { CanonPos.x - 10,CanonPos.y - 100,CanonPos.x + 10,CanonPos.y - 20 };
-	GameObject* canon = new Canon(CanonPos, BarrelPos);
-	Objects.push_back(canon);
+	
 }
 
-void GameManager::UpdateGameObjects(int handle)
+void GameManager::UpdateGameObjects()
 {
-	if (CurTime - StartTime >= FrameRate)
-		return;
-
 	for (int i = 0; i < Objects.size(); i++)
 	{
-		Objects[i]->Update(handle);
+		Objects[i]->Update();
+	}
+	
+}
+
+void GameManager::DrawGameObjects(HDC hdc)
+{
+	for (int i = 0; i < Objects.size(); i++)
+	{
+		Objects[i]->Draw(hdc);
 	}
 }
 
@@ -41,4 +40,10 @@ void GameManager::DeleteGameObjects()
 			Objects[i] = nullptr;
 		}
 	}
+}
+
+void GameManager::InstantiateBullet(Canon& canon)
+{
+	GameObject* obj = new Bullet(canon.GetShootPos(),5,canon.GetSlope());
+	Objects.push_back(obj);
 }
