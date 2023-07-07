@@ -130,6 +130,7 @@
     <ClInclude Include="Bullet.h" />
     <ClInclude Include="Canon.h" />
     <ClInclude Include="DefenceGameProj.h" />
+    <ClInclude Include="Enemy.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="GameManager.h" />
     <ClInclude Include="GameObject.h" />
@@ -140,6 +141,7 @@
     <ClCompile Include="Bullet.cpp" />
     <ClCompile Include="Canon.cpp" />
     <ClCompile Include="DefenceGameProj.cpp" />
+    <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="Vector2D.cpp" />
     <ClCompile Include="Vector2D.h" />
