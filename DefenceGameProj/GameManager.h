@@ -11,6 +11,7 @@ class GameManager
 {
 private:
 	int PlayerHP;
+	int Score;
 
 	RECT rectView;
 	SpaceShip ss;
