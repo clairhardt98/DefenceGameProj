@@ -1,15 +1,24 @@
 #pragma once
-#include "GameObject.h"
-class Enemy :public GameObject
+#include "framework.h"
+class Enemy
 {
 private:
-	LONG Radius;
-	int Health;
-	Vector2D Force;
+	COLORREF color;
+	POINT center;
+	LONG radius;
+	Vector2D force;
+	BOOL canShoot;
+	POINT shootPos;
 public:
-	Enemy();
-	Enemy(const POINT& center);
-
-	void Update()override;
-	void Draw(HDC hdc)override;
+	Enemy(const POINT& center, const COLORREF& ref);
+	POINT GetCenter() { return center; }
+	LONG GetRadius() { return radius; }
+	POINT GetShootPos() { return shootPos; }
+	BOOL GetCanShoot() { return canShoot; }
+	void SetCenter(const POINT& p) { center = p; }
+	void SetRadius(const LONG& r) { radius = r; }
+	void SetForce(const Vector2D& force);
+	void SetCanShoot(BOOL s) { canShoot = s; }
+	void Update();
+	void Draw(HDC hdc);
 };

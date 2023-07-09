@@ -1,6 +1,6 @@
 ﻿// DefenceGameProj.cpp : 애플리케이션에 대한 진입점을 정의합니다.
 //
-#include "framework.h"
+
 #include "DefenceGameProj.h"
 #include "GameManager.h"
 
@@ -24,11 +24,9 @@ INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 //전역변수
 RECT rectView;
-POINT ptMousePos;
+int handle;
+POINT StartPos[7] = { {300,900},{320,900},{340,860},{360,900},{380,900},{380,940},{300,940} };
 
-
-
-int handle = 0;
 //함수
 
 
@@ -114,7 +112,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
 
    HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+      0, 0, 768, 1024, nullptr, nullptr, hInstance, nullptr);
 
    if (!hWnd)
    {
@@ -138,41 +136,54 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    static Canon canon;
-    static GameManager gm;
+{ 
+    static GameManager gm(StartPos);
+    PAINTSTRUCT ps;
+    HDC hdc;
     switch (message)
     {
     case WM_CREATE:
         {
+            if (AllocConsole())
+            {
+                freopen("CONIN$", "rb", stdin);
+                freopen("CONOUT$", "wb", stdout);
+                freopen("CONOUT$", "wb",stderr);
+            }
             SetTimer(hWnd, timer_ID_1, 10, NULL);
             GetClientRect(hWnd, &rectView);
-            POINT CanonPos = { (rectView.right - rectView.left) / 2,rectView.bottom };
-            RECT BarrelPos = { CanonPos.x - 10,CanonPos.y - 100,CanonPos.x + 10,CanonPos.y - 20 };
-            canon = Canon(CanonPos, BarrelPos);
+            gm.InitGameObjects(rectView);
         }
-        break;
-    case WM_MOUSEMOVE:
-    {
-        ptMousePos.x = LOWORD(lParam);
-        ptMousePos.y = HIWORD(lParam);
-        Vector2D temp(ptMousePos.x, ptMousePos.y);
-        canon.SetSlope(temp);
-    }
-        break;
-    case WM_LBUTTONDOWN:
-    {
-        gm.InstantiateBullet(canon);
-        InvalidateRect(hWnd, NULL, TRUE);
-    }
         break;
     case WM_TIMER:
     {
-        canon.Update();
-        gm.UpdateGameObjects();
-        InvalidateRgn(hWnd, NULL, TRUE);
+        gm.UpdateGameObjects(handle);
+        InvalidateRgn(hWnd, NULL, FALSE);
     }
         break;
+    
+    case WM_KEYDOWN:
+    {
+        switch (wParam)
+        {
+        case VK_SPACE:
+            gm.InstantiateBullet(false);
+            InvalidateRgn(hWnd, NULL, FALSE);
+            break;
+        case VK_LEFT:
+            handle = -1;
+            break;
+        case VK_RIGHT:
+            handle = 1;
+            break;
+        }
+    }
+    break;
+    case WM_KEYUP:
+    {
+        handle = 0;
+        break;
+    }
     case WM_COMMAND:
         {
             int wmId = LOWORD(wParam);
@@ -192,16 +203,35 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     case WM_PAINT:
         {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hWnd, &ps);
-            
+            static HDC MemDC, tmpDC;
+            static HBITMAP BackBit, oldBackBit;
+            hdc = BeginPaint(hWnd, &ps);
+
+            MemDC = CreateCompatibleDC(hdc);
+            BackBit = CreateCompatibleBitmap(hdc, rectView.right, rectView.bottom);
+            oldBackBit = (HBITMAP)SelectObject(MemDC, BackBit);
+            PatBlt(MemDC, 0, 0, rectView.right, rectView.bottom, BLACKNESS);
+            tmpDC = hdc;
+            hdc = MemDC;
+            MemDC = tmpDC;
+
+            // TODO: 여기에 그리기 코드를 추가합니다.
             gm.DrawGameObjects(hdc);
-            canon.Draw(hdc);
+
+            tmpDC = hdc;
+            hdc = MemDC;
+            MemDC = tmpDC;
+            GetClientRect(hWnd, &rectView);
+            BitBlt(hdc, 0, 0, rectView.right, rectView.bottom, MemDC, 0, 0, SRCCOPY);
+            SelectObject(MemDC, oldBackBit);
+            DeleteObject(BackBit);
+            DeleteDC(MemDC);
             EndPaint(hWnd, &ps);
+            break;
         }
         break;
     case WM_DESTROY:
-        gm.DeleteGameObjects();
+        FreeConsole();
         PostQuitMessage(0);
         break;
     default:

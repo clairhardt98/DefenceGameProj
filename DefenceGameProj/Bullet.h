@@ -1,20 +1,28 @@
 #pragma once
-#include "GameObject.h"
+#include "framework.h"
 
-class Bullet :public GameObject
+class Bullet 
 {
 private:
-	LONG Force;
-	Vector2D Direction;
-	LONG Radius;
+	POINT center;
+	LONG force;
+	Vector2D direction;
+	LONG radius;
+	BOOL Tag;
 public:
-	Bullet();
 	Bullet(const POINT& center, const LONG& force, const Vector2D& direction);
 
-	void Update()override;
-	void Draw(HDC hdc)override;
+	void Update();
+	void Draw(HDC hdc);
+	POINT GetCenter() { return center; }
+	LONG GetRadius() { return radius; }
+	void SetCenter(const POINT& p) { center = p; }
+	void SetRadius(const LONG& r) { radius = r; }
 
-	void SetBullet();
-	BOOL IsColliding(GameObject* go);
-	void Collision(GameObject* go);
+	void SetTag(BOOL tag) { Tag = tag; };
+	BOOL GetTag() { return Tag; }
+
+
+	BOOL IsColliding();
+	void Collision();
 };

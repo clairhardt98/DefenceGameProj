@@ -1,25 +1,37 @@
 #include "Enemy.h"
 
-Enemy::Enemy()
-	:GameObject()
+Enemy::Enemy(const POINT& center, const COLORREF& ref)
+	:radius(10)
 {
+	this->center = center;
+	shootPos = { center.x, center.y + 7 };
+	SetForce(Vector2D(1, 0));
+	canShoot = false;
+	color = ref;
 }
 
-Enemy::Enemy(const POINT& center)
-	:GameObject(center)
+void Enemy::SetForce(const Vector2D& force)
 {
-	Force = Vector2D(0, 5);
-	Radius = 10;
-	Health = 3;
+	this->force = force;
 }
 
 void Enemy::Update()
 {
-	Center.x += Force.getX();
-	Center.y += Force.getY();
+	center.x += force.getX();
+	center.y += force.getY();
+	shootPos.x += force.getX();
+	shootPos.y += force.getY();
 }
 
 void Enemy::Draw(HDC hdc)
 {
-	Ellipse(hdc, Center.x - Radius, Center.y - Radius, Center.x + Radius, Center.y + Radius);
+	HBRUSH hBrush, oldBrush;
+	hBrush = CreateSolidBrush(color);
+	oldBrush = (HBRUSH)SelectObject(hdc, hBrush);
+
+	Ellipse(hdc, center.x - radius, center.y - radius, center.x + radius, center.y + radius);
+
+	SelectObject(hdc, hBrush);
+	DeleteObject(hBrush);
+	
 }
