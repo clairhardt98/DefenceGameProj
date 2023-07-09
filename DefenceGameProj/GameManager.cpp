@@ -5,6 +5,7 @@ GameManager::GameManager(POINT* P)
 {
 	PlayerHP = 3;
 	ss.SetColor(RGB(0, 255, 0));
+	Score = 0;
 }
 
 void GameManager::InitGameObjects(const RECT& rectView)
@@ -176,6 +177,7 @@ void GameManager::CollisionLoop()
 			{
 				if (BulletCollision(bullets[i], enemies[j]))
 				{
+					
 					enemies[j]->SetCanShoot(FALSE);
 					if (j + 10 < 50)
 					{
@@ -232,6 +234,7 @@ BOOL GameManager::BulletCollision(Bullet* bullet, Enemy* enemy)
 		bullet->SetRadius(0);
 		enemy->SetCenter({ -2000,-2000 });
 		enemy->SetRadius(0);
+		Score += 100;
 		return TRUE;
 		//맞으면 멀리 보내버리기
 	}
@@ -247,6 +250,7 @@ BOOL GameManager::BulletCollision(Bullet* bullet, SpaceShip* ss)
 	{
 		bullet->SetCenter({ 2000,2000 });
 		bullet->SetRadius(0);
+
 		return TRUE;
 		//맞으면 멀리 보내버리기
 	}
@@ -263,6 +267,7 @@ BOOL GameManager::BulletCollision(Bullet* bullet1, Bullet* bullet2)
 		bullet1->SetRadius(0);
 		bullet2->SetCenter({ 2000,2000 });
 		bullet2->SetRadius(0);
+		Score += 100;
 		return TRUE;
 		//맞으면 멀리 보내버리기
 	}
