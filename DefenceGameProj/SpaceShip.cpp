@@ -9,7 +9,6 @@ SpaceShip::SpaceShip(POINT* p)
 	SetCollider();
 	color = RGB(255, 255, 255);
 }
-
 void SpaceShip::Draw(HDC hdc)
 {
 	HBRUSH hBrush, oldBrush;
@@ -21,7 +20,6 @@ void SpaceShip::Draw(HDC hdc)
 	SelectObject(hdc, hBrush);
 	DeleteObject(hBrush);
 }
-
 void SpaceShip::Update(int handle)
 {
 	for (int i = 0; i < 7; i++)
@@ -32,7 +30,6 @@ void SpaceShip::Update(int handle)
 	center.x += speed * handle;
 	//printf("center : %d,%d\n", center.x, center.y);
 }
-
 void SpaceShip::SetCollider()
 {
 	center = { points[2].x, points[5].y+(points[5].y - points[4].y) / 2 };

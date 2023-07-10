@@ -8,13 +8,16 @@ Enemy::Enemy(const POINT& center, const COLORREF& ref)
 	SetForce(Vector2D(1, 0));
 	canShoot = false;
 	color = ref;
+	SetBrush();
 }
-
+void Enemy::SetBrush()
+{
+	hBrush = CreateSolidBrush(color);
+}
 void Enemy::SetForce(const Vector2D& force)
 {
 	this->force = force;
 }
-
 void Enemy::Update()
 {
 	center.x += force.getX();
@@ -22,16 +25,13 @@ void Enemy::Update()
 	shootPos.x += force.getX();
 	shootPos.y += force.getY();
 }
-
 void Enemy::Draw(HDC hdc)
 {
-	HBRUSH hBrush, oldBrush;
-	hBrush = CreateSolidBrush(color);
+	HBRUSH oldBrush;
 	oldBrush = (HBRUSH)SelectObject(hdc, hBrush);
-
+	
 	Ellipse(hdc, center.x - radius, center.y - radius, center.x + radius, center.y + radius);
 
 	SelectObject(hdc, hBrush);
-	DeleteObject(hBrush);
-	
+	//DeleteObject(oldBrush);
 }

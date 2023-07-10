@@ -12,6 +12,7 @@ class GameManager
 private:
 	int PlayerHP;
 	int Score;
+	int KillCnt;
 
 	RECT rectView;
 	SpaceShip ss;
@@ -28,13 +29,16 @@ private:
 	int EnemyMoveTick;
 	int ShootCoolTick;
 	int EnemyShootCoolTick;
+	int EraseCoolTick;
 	int CurrTime;
 	
 	//Enemy 배열 다루기 위한 변수
 	Vector2D EnemyMovement;
 	int EnemyMoveState;
 	int MoveCnt;
-	//gunny에 대한 정보
+	//게임 클리어/오버에 대한 정보
+	BOOL GameOver;
+	BOOL GameClear;
 public:
 	GameManager(POINT* P);
 	
@@ -50,5 +54,12 @@ public:
 	BOOL BulletCollision(Bullet* bullet, SpaceShip* ss);
 	BOOL BulletCollision(Bullet* bullet1, Bullet* bullet2);
 	void RandomEnemyInstantiateBullet(int idx);
+	void EraseObjects();
+	BOOL GetGameOver() { return GameOver; }
+	BOOL GetGameClear() { return GameClear; }
+	
+
+	int GetScore() { return Score; }
+	int GetKillCnt() { return KillCnt; }
 };
 //객체들 담을 변수

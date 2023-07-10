@@ -14,6 +14,7 @@ public:
 
 	void Update();
 	void Draw(HDC hdc);
+
 	POINT GetCenter() { return center; }
 	LONG GetRadius() { return radius; }
 	void SetCenter(const POINT& p) { center = p; }
@@ -21,7 +22,6 @@ public:
 
 	void SetTag(BOOL tag) { Tag = tag; };
 	BOOL GetTag() { return Tag; }
-
 
 	BOOL IsColliding();
 	void Collision();

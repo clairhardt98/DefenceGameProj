@@ -6,12 +6,13 @@ GameManager::GameManager(POINT* P)
 	PlayerHP = 3;
 	ss.SetColor(RGB(0, 255, 0));
 	Score = 0;
+	KillCnt = 0;
+	GameOver = GameClear = false;
 }
-
 void GameManager::InitGameObjects(const RECT& rectView)
 {
 	
-	InitTime = CurrTime = EnemyMoveTick = ShootCoolTick = GetTickCount();
+	EraseCoolTick = InitTime = CurrTime = EnemyMoveTick = ShootCoolTick = GetTickCount();
 	const int startX = 50;
 	const int startY = 50;
 	const int interval = (rectView.right - rectView.left - 100) / 10;
@@ -40,8 +41,6 @@ void GameManager::InitGameObjects(const RECT& rectView)
 	//여기서 적 배열, gunny 배열 생성 및 할당
 	//여기서 시작한 시간 측정
 }
-
-
 void GameManager::UpdateGameObjects(int handle)
 {
 	CurrTime = GetTickCount();
@@ -51,9 +50,8 @@ void GameManager::UpdateGameObjects(int handle)
 	{
 		bullets[i]->Update();
 	}
-
 	//적들이 움직이는 것은 쿨타임을 줌
-	if (CurrTime - EnemyMoveTick > 100)
+	if (CurrTime - EnemyMoveTick > 100 - KillCnt * 2)
 	{
 		MoveCnt++;
 		for (int i = 0; i < enemies.size(); i++)
@@ -74,8 +72,9 @@ void GameManager::UpdateGameObjects(int handle)
 	}
 	//충돌로직
 	CollisionLoop();
+	//충돌돼서 사라진 애들 다 지우기
+	//EraseObjects();
 }
-
 void GameManager::ChangeEnemyDirection()
 {
 	EnemyMoveState += 1;
@@ -102,7 +101,6 @@ void GameManager::ChangeEnemyDirection()
 	}
 
 }
-
 void GameManager::DrawGameObjects(HDC hdc)
 {
 	ss.Draw(hdc);
@@ -116,7 +114,6 @@ void GameManager::DrawGameObjects(HDC hdc)
 		enemies[i]->Draw(hdc);
 	}
 }
-
 void GameManager::DeleteGameObjects()
 {
 	for (int i = 0; i < bullets.size(); i++)
@@ -138,7 +135,6 @@ void GameManager::DeleteGameObjects()
 	}
 
 }
-
 void GameManager::InstantiateBullet(BOOL tag)
 {
 	CurrTime = GetTickCount();
@@ -152,11 +148,10 @@ void GameManager::InstantiateBullet(BOOL tag)
 	}
 
 }
-
 void GameManager::InstantiateBullet(BOOL tag, int idx)
 {
 	CurrTime = GetTickCount();
-	if (CurrTime - EnemyShootCoolTick > 800)
+	if (CurrTime - EnemyShootCoolTick > 500)
 	{
 		Bullet* b = new Bullet(enemies[idx]->GetShootPos(), 10, Vector2D(0, 20));
 		b->SetTag(tag);//누가 쐈는지에 대한 태그
@@ -165,7 +160,6 @@ void GameManager::InstantiateBullet(BOOL tag, int idx)
 	}
 
 }
-
 void GameManager::CollisionLoop()
 {
 	for (int i = 0; i < bullets.size(); i++)
@@ -177,10 +171,9 @@ void GameManager::CollisionLoop()
 			{
 				if (BulletCollision(bullets[i], enemies[j]))
 				{
-					
-					enemies[j]->SetCanShoot(FALSE);
-					if (j + 10 < 50)
+					if (j + 10 < 50 && enemies[j]->GetCanShoot())
 					{
+						enemies[j]->SetCanShoot(FALSE);
 						enemies[j + 10]->SetCanShoot(TRUE);
 						printf("enemy %d hit, new shooter enemy is enemy %d\n", j, j + 10);
 
@@ -200,6 +193,7 @@ void GameManager::CollisionLoop()
 			{
 				printf("player hit!\n");
 				PlayerHP--;
+				if (PlayerHP <= 0)GameOver = TRUE;
 				COLORREF color;
 				switch (PlayerHP)
 				{
@@ -223,7 +217,6 @@ void GameManager::CollisionLoop()
 		}
 	}
 }
-
 BOOL GameManager::BulletCollision(Bullet* bullet, Enemy* enemy)
 {
 	FLOAT dist = sqrt(pow(bullet->GetCenter().x - enemy->GetCenter().x, 2)
@@ -233,15 +226,18 @@ BOOL GameManager::BulletCollision(Bullet* bullet, Enemy* enemy)
 		bullet->SetCenter({ 2000,2000 });
 		bullet->SetRadius(0);
 		enemy->SetCenter({ -2000,-2000 });
+		enemy->SetShootPos({ -2000,-2000});
 		enemy->SetRadius(0);
 		Score += 100;
+		KillCnt++;
+		if (KillCnt == 50)GameClear = TRUE;
+		printf("Score : %d\n", Score);
 		return TRUE;
 		//맞으면 멀리 보내버리기
 	}
 	else return false;
 
 }
-
 BOOL GameManager::BulletCollision(Bullet* bullet, SpaceShip* ss)
 {
 	FLOAT dist = sqrt(pow(bullet->GetCenter().x - ss->GetCenter().x, 2)
@@ -256,7 +252,6 @@ BOOL GameManager::BulletCollision(Bullet* bullet, SpaceShip* ss)
 	}
 	return false;
 }
-
 BOOL GameManager::BulletCollision(Bullet* bullet1, Bullet* bullet2)
 {
 	FLOAT dist = sqrt(pow(bullet1->GetCenter().x - bullet2->GetCenter().x, 2)
@@ -267,13 +262,12 @@ BOOL GameManager::BulletCollision(Bullet* bullet1, Bullet* bullet2)
 		bullet1->SetRadius(0);
 		bullet2->SetCenter({ 2000,2000 });
 		bullet2->SetRadius(0);
-		Score += 100;
+		Score += 500;
 		return TRUE;
 		//맞으면 멀리 보내버리기
 	}
 	return false;
 }
-
 void GameManager::RandomEnemyInstantiateBullet(int idx)
 {
 	std::mt19937 gen(rd());
@@ -285,5 +279,14 @@ void GameManager::RandomEnemyInstantiateBullet(int idx)
 		InstantiateBullet(true, idx);
 	}
 }
-
-
+void GameManager::EraseObjects()
+{
+	CurrTime = GetTickCount();
+	if(CurrTime - EraseCoolTick >1000)
+	{
+		enemies.erase(std::remove_if(enemies.begin(), enemies.end(), [](Enemy* obj) {return obj->GetCenter().x <-1000; }), enemies.end());
+		bullets.erase(std::remove_if(bullets.begin(), bullets.end(), [](Bullet* obj) {return obj->GetCenter().y > 1000; }), bullets.end());
+		printf("bullets and enemies erased\n");
+		EraseCoolTick = CurrTime;
+	}
+}
